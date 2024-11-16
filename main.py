@@ -5,34 +5,43 @@ import random
 WIDTH = 1000
 HEIGHT = 800
 
-warrior_idle = [
-    'warrior/idle/tile000' ,
-    'warrior/idle/tile001' ,
-    'warrior/idle/tile002' ,
-    'warrior/idle/tile003' ,
-    'warrior/idle/tile004' ,
-    'warrior/idle/tile005' ,
-    'warrior/idle/tile006' ,
-    'warrior/idle/tile007' ,
-    'warrior/idle/tile008' ,
-    'warrior/idle/tile009'
+player_idle = [
+    'player/idle/tile000',
+    'player/idle/tile001',
+    'player/idle/tile002',
+    'player/idle/tile003'
 ]
 
-warrior_attack = [
-    'warrior/attack/tile000',
-    'warrior/attack/tile001',
-    'warrior/attack/tile002',
-    'warrior/attack/tile003'
+player_attack = [
+    'player/attack/tile004',
+    'player/attack/tile005',
+    'player/attack/tile006',
+    'player/attack/tile007',
+    'player/attack/tile008',
+    'player/attack/tile009',
+    'player/attack/tile010'
 ]
 
-zombie_run = [
-    'zombie/run/tile002', 
-    'zombie/run/tile003',
-    'zombie/run/tile004',
-    'zombie/run/tile005',
+player_attack2 = [
+    'player/attack2/tile011',
+    'player/attack2/tile012',
+    'player/attack2/tile013',
+    'player/attack2/tile014' ,
+    'player/attack2/tile015',
+    'player/attack2/tile016',
+    'player/attack2/tile017',
+    'player/attack2/tile018',
+    'player/attack2/tile019'
 ]
 
-zombie_death = [
+enemy_idle = [
+    'zombie/tile000', 
+    'zombie/tile001',
+    'zombie/tile002',
+    'zombie/tile003',
+]
+
+enemy_death = [
     'zombie/die/tile014',
     'zombie/die/tile015',
     'zombie/die/tile016',
@@ -46,11 +55,11 @@ zombie_death = [
     'zombie/die/tile024'
 ]
 
-warrior = Actor(warrior_idle[0])
-warrior.images = warrior_idle
+player = Actor(player_idle[0])
+player.images = player_idle
 
-zombie = Actor(zombie_run[0])
-zombie.images = zombie_run
+enemy = Actor(enemy_idle[0])
+enemy.images = enemy_idle
 
 
 zombie.scale = 4
@@ -68,10 +77,10 @@ question = random.choice(questionBank)
 typed = ''
 
 def update():
-    zombie.animate()
-    warrior.animate()
-    if warrior_attack[-1] == warrior.image:
-        warrior.images = warrior_idle
+    player.animate()
+    enemy.animate()
+    if player_attack[-1] == player.image:
+        player.images = player_idle
         warrior.x = 90
     if zombie_death[-1] == zombie.image:
         zombie.images = zombie_run
