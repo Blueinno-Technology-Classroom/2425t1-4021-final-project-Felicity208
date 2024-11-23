@@ -1,6 +1,7 @@
 import pgzrun
 from pgzhelper import *
 import random
+import time
 
 
 
@@ -59,13 +60,16 @@ enemy_attack = [
     "enemy/attack/tile004",
     "enemy/attack/tile005",
     "enemy/attack/tile006",
-    "enemy/attack/tile007",
+    "enemy/attack/tile007 copy 2",
+    "enemy/attack/tile007 copy 3",
+    "enemy/attack/tile007 copy 4",
+    "enemy/attack/tile007 copy 5",
+    "enemy/attack/tile007 copy",
     "enemy/attack/tile008",
     "enemy/attack/tile009"
 ]
 
 enemy_attack2 = [
-    "enemy/attack2/tile009",
     "enemy/attack2/tile010",
     "enemy/attack2/tile011",
     "enemy/attack2/tile012",
@@ -83,6 +87,22 @@ enemy_death = [
 ]
 
 
+timer = 300
+
+
+
+
+player_spell = [
+    "projectiles/player/tile000",
+    "projectiles/player/tile001"
+]
+
+enemy_spell =[
+    "projectiles/enemy/tile002",
+    "projectiles/enemy/tile003"
+]
+
+
 
 
 player = Actor(player_idle[0])
@@ -95,13 +115,29 @@ player.hp = 100
 
 enemy = Actor(enemy_idle [0])
 enemy.images = enemy_idle
-enemy.right = WIDTH - 30
-enemy.bottom = HEIGHT - 30
-enemy.scale = 1.3
+enemy.right = WIDTH - 20
+enemy.bottom = HEIGHT - 40
+enemy.scale = 1.6
 enemy.fps = 8
 
 
+player_spells = Actor(player_spell[0])
+player_spells.images = player_spell
+player_spells.x = 230
+player_spells.y = 510
+player_spells.scale = 0.2
+player_spells.show = False
+
+enemy_spells = Actor(enemy_spell[0])
+enemy_spells.images = enemy_spell
+enemy_spells.pos = enemy.pos
+enemy_spells.scale = 0.3
+enemy_spells.show = False
+
+
+
 questionBank = (['attack', 'spell', 'slash','defeat','slay'])
+specialQuestions = (['conquer', 'vanquish', 'triumph', 'overcome'])
 question = random.choice(questionBank)
 typed = ''
 typed_status = 'incomplete'
@@ -115,6 +151,8 @@ def update():
     if player.image != player_death [-1]:
         player.animate()
     enemy.animate()
+    player_spells.animate()
+    enemy_spells.animate()
     if player.hp <= 0 and player.image not in player_death:
         player.images = player_death
     # elif player.hp <= 0 and player.image == player_death [-1]:
@@ -123,20 +161,36 @@ def update():
 
 
 
-    if enemy.collide_pixel(player):
+    if ( enemy.collide_pixel(player) or enemy.collide_pixel(player_spells) )and enemy.images != enemy_attack2:
         enemy.images = enemy_death
     if player_attack[-1] == player.image:
         player.images = player_idle
-        player.left = -35
+        player.left = 7
+        player.bottom = HEIGHT + 38
         player.fps = 6
     if player_attack2[-1] == player.image:
         player.images = player_idle
     if enemy_death [-1] == enemy.image:
         enemy.images = enemy_idle
-        enemy.right = WIDTH - 30
-        enemy.bottom = HEIGHT - 30
+        enemy.right = WIDTH + 60
+        enemy.bottom = HEIGHT + 35
     if enemy_attack [-1] == enemy.image:
         enemy.images = enemy_idle
+    if enemy_attack2 [-1] == enemy.image:
+        enemy.images = enemy_idle
+        enemy.right = WIDTH + 60
+        enemy.bottom = HEIGHT + 35
+    if player_spells.x <= enemy.x and player.images == player_attack2 and enemy.images not in enemy_death:
+        player_spells.show = True
+        player_spells.x += 11
+    elif player.images not in player_attack2:
+        player_spells.pos = player.pos
+    if enemy_spells.x >= player.x - 30 and enemy.images == enemy_attack and player.images not in player_death:
+        enemy_spells.x -= 15
+    elif enemy.images not in enemy_attack:
+        enemy_spells.pos = enemy.pos
+        enemy_spells.show  = False
+
 
 
 
@@ -166,22 +220,39 @@ def on_key_down(key):
         if typed == question:
             typed_status = 'incomplete'
             typed = ''
-            player.images = player_attack
-            player.x = enemy.left + 70
-            player.fps = 8
-            enemy.images = enemy_death
-            question = random.choice(questionBank)
+            if question in specialQuestions:
+                player.images = player_attack2
+            else:
+                player.images = player_attack
+                player.x = enemy.left + 60
+                player.fps = 8
+            if random.randint(0, 43) >= 30:
+                question = random.choice(specialQuestions)
+            else:
+                question = random.choice(questionBank)
         elif typed != question:
-            enemy.images = enemy_attack
+            if question in specialQuestions:
+                enemy.images = enemy_attack2
+                enemy.x = player.top
+            else:
+                enemy_spells.show = True
+                enemy.images = enemy_attack
             typed = ''
             typed_status = 'incomplete'
-            player.hp -= 5
+            if question in specialQuestions:
+                player.hp -= 20
+            else:
+                player.hp -= 5
         
 
 
         
 def draw():
     screen.clear()
+    if player_spells.show:
+        player_spells.draw()
+    if enemy_spells.show:
+        enemy_spells.draw()
     screen.draw.filled_rect(Rect(player.x - 30, player.top, 100, 20), 'red')
     screen.draw.filled_rect(Rect(player.x-30, player.top, player.hp, 20), 'green')
     screen.draw.text(question, (20, 100), fontsize=60)
