@@ -103,6 +103,13 @@ enemy_spell =[
 
 
 
+backgrounds = [
+    "background/typingbg",
+    "background/shootingbg",
+    "background/gameover"
+]
+
+
 player = Actor(player_idle[0])
 player.images = player_idle
 player.left = -35
@@ -132,8 +139,10 @@ enemy_spells.pos = enemy.pos
 enemy_spells.scale = 0.3
 enemy_spells.show = False
 
-game_over = Actor("download")
-game_over.bottom = 0
+background = Actor(backgrounds[0])
+background.x = WIDTH/2
+background.y = HEIGHT/2
+background.scale = 0.6
 
 questionBank = (['attack', 'spell', 'slash','defeat','slay'])
 specialQuestions = (['conquer', 'vanquish', 'triumph', 'overcome'])
@@ -145,11 +154,24 @@ questions_answered = 0
 timer = 10
 mode = 1
 
+enemyspells=[]
+
+
+def create_enemy_spells():
+    enemy_spells = Actor("tile002(1)")
+    enemy_spells.images = enemy_spell
+    enemy_spells.x = random.randint(0, WIDTH)
+    enemy_spells.y = 0
+    enemy_spells.point_towards(player)
+    enemy_spells.scale = 0.3
+    enemy_spells.show = True
+    return enemy_spells
 
 
 def update():
-    global typed, question, typed_status, timer, mode
-    if round(timer) > 0 and player.hp > 0: 
+    global typed, question, typed_status, timer, mode, enemyspells
+    
+    if round(timer) > 0 and player.hp > 0 and mode == 1: 
         if player.image != player_death [-1]:
             player.animate()
         enemy.animate()
@@ -164,11 +186,16 @@ def update():
         # elif player.hp <= 0 and player.image == player_death [-1]:
         #     player.image = player_death [-1]
 
-        if (player.hp <=60 or questions_answered == 16) and mode != 2:
+        if questions_answered == 3 and mode != 2:
             mode = 2
             timer = 300
             player.images = player_idle
-            enemy.images = enemy_idle
+            background.image = backgrounds[1]
+            player.hp = 100
+            player.bottom = HEIGHT + 60
+            player.x = WIDTH /2
+            enemy_spells.y = 0
+            enemyspells = []
             
 
 
@@ -207,22 +234,28 @@ def update():
                 enemy_spells.show  = False
         
         elif mode == 2: 
-            player.hp = 100
-            player.bottom = HEIGHT + 60
-            player.x = WIDTH /2
-            enemy.y = 90
-            #enemy.x -= 1
-            
-    else:
-        if game_over.bottom < WIDTH:
-            game_over.x += 10
-        else:
-            game_over.bottom = WIDTH
 
+            if keyboard.right:
+                player.x += 5
+            if keyboard.left:
+                player.x -= 5
+                player.direction = -90
+            if player.x <= 0:
+                player.x = 0
+            if player.x >= WIDTH:
+                player.x = WIDTH
 
-
-
-
+            if random.randint(1, 15) > 14:
+                enemy_spells.show = True
+                enemyspells.append(create_enemy_spells()) 
+            for s in enemyspells:
+                s.move_forward(9) 
+                if s.collide_pixel(player):
+                    enemyspells.remove(s)
+                    player.hp -= 1
+    elif (round(timer)) == 0 and player.hp < 0 and mode == 2:
+        background.image = backgrounds[2]
+    
 
 
     
@@ -289,6 +322,7 @@ def on_key_down(key):
         
 def draw():
     screen.clear()
+    background.draw()
     if round(timer) > 0 and player.hp > 0 and mode == 1:
         if player_spells.show:
             player_spells.draw()
@@ -305,13 +339,11 @@ def draw():
     elif mode == 2:
         screen.draw.filled_rect(Rect(0, 0, player.hp/100*WIDTH, 30), 'green')
         screen.draw.text(str(round(timer)), center=(WIDTH/2, 40), fontsize = 40, color = 'white')
-        enemy.draw()
+        # if enemy_spells.show == True:
+        #     enemy_spells.draw()
+        for s in enemyspells:
+            if s.show == True:
+                s.draw()
         player.draw()
-
-
-    elif round(timer) > 0 and player.hp > 0:
-        game_over.draw()
-        screen.draw.text("GAME OVER", center=(WIDTH/2, HEIGHT/2), fontsize = 100, color =  "red")
-        
 
 pgzrun.go()
