@@ -106,7 +106,8 @@ enemy_spell =[
 backgrounds = [
     "background/typingbg",
     "background/shootingbg",
-    "background/gameover"
+    "background/gameover-time",
+    "background/gameover-hp"
 ]
 
 
@@ -156,8 +157,9 @@ mode = 1
 win = 0
 
 
+
 def update():
-    global typed, question, typed_status, timer, mode, enemyspells, win
+    global typed, question, typed_status, timer, mode, enemyspells
     
     if round(timer) > 0 and player.hp > 0:
         if mode == 1: 
@@ -175,8 +177,7 @@ def update():
             # elif player.hp <= 0 and player.image == player_death [-1]:
             #     player.image = player_death [-1]
 
-        if questions_answered == 16:
-            win = 1
+
             
 
 
@@ -215,14 +216,20 @@ def update():
                 enemy_spells.show  = False
 
     else:
-        background.image = backgrounds[2]
+        if player.hp > 0 and round(timer) == 0:
+            background.image = backgrounds[2]
+            background.scale = 1
+        elif player.hp <= 0:
+            background.image = backgrounds[3]
+            background.scale = 1
+
     
 
 
     
     
 def on_key_down(key):
-    global typed, question, typed_status, timer, questions_answered
+    global typed, question, typed_status, timer, questions_answered, mode
     if round(timer) > 0 and player.hp > 0 and mode == 1:
         if key in range(97, 123):
             #print(chr(key))
@@ -288,8 +295,6 @@ def draw():
         screen.draw.text(str(round(timer)), (0, 0), fontsize = 40, color = 'white')
         enemy.draw()
         player.draw()
-    if win == 1:
-        screen.clear()
-        screen.draw.text("YOU WIN!", center =(WIDTH/2, HEIGHT/2), fontsize = 45, color = 'white')
-
+    elif round(timer) == 0 or player.hp <= 0:
+        screen.draw.text("Try again? Press ENTER", center=(WIDTH/2,  600), fontsize = 55, color = 'red')
 pgzrun.go()
