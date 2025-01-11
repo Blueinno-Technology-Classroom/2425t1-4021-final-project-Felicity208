@@ -153,49 +153,30 @@ questions_answered = 0
 
 timer = 10
 mode = 1
-
-enemyspells=[]
-
-
-def create_enemy_spells():
-    enemy_spells = Actor("tile002(1)")
-    enemy_spells.images = enemy_spell
-    enemy_spells.x = random.randint(0, WIDTH)
-    enemy_spells.y = 0
-    enemy_spells.point_towards(player)
-    enemy_spells.scale = 0.3
-    enemy_spells.show = True
-    return enemy_spells
+win = 0
 
 
 def update():
-    global typed, question, typed_status, timer, mode, enemyspells
+    global typed, question, typed_status, timer, mode, enemyspells, win
     
-    if round(timer) > 0 and player.hp > 0 and mode == 1: 
-        if player.image != player_death [-1]:
-            player.animate()
-        enemy.animate()
-        player_spells.animate()
-        enemy_spells.animate()
-        if round(timer) != 0 and typed_status == 'incomplete':
-            timer -= 1/60
-        elif round(timer) == 0:
-            timer = 0
-        if player.hp <= 0 and player.image not in player_death:
-            player.images = player_death
-        # elif player.hp <= 0 and player.image == player_death [-1]:
-        #     player.image = player_death [-1]
+    if round(timer) > 0 and player.hp > 0:
+        if mode == 1: 
+            if player.image != player_death [-1]:
+                player.animate()
+            enemy.animate()
+            player_spells.animate()
+            enemy_spells.animate()
+            if round(timer) != 0 and typed_status == 'incomplete':
+                timer -= 1/60
+            elif round(timer) == 0:
+                timer = 0
+            if player.hp <= 0 and player.image not in player_death:
+                player.images = player_death
+            # elif player.hp <= 0 and player.image == player_death [-1]:
+            #     player.image = player_death [-1]
 
-        if questions_answered == 3 and mode != 2:
-            mode = 2
-            timer = 300
-            player.images = player_idle
-            background.image = backgrounds[1]
-            player.hp = 100
-            player.bottom = HEIGHT + 60
-            player.x = WIDTH /2
-            enemy_spells.y = 0
-            enemyspells = []
+        if questions_answered == 16:
+            win = 1
             
 
 
@@ -232,28 +213,8 @@ def update():
             elif enemy.images not in enemy_attack:
                 enemy_spells.pos = enemy.pos
                 enemy_spells.show  = False
-        
-        elif mode == 2: 
 
-            if keyboard.right:
-                player.x += 5
-            if keyboard.left:
-                player.x -= 5
-                player.direction = -90
-            if player.x <= 0:
-                player.x = 0
-            if player.x >= WIDTH:
-                player.x = WIDTH
-
-            if random.randint(1, 15) > 14:
-                enemy_spells.show = True
-                enemyspells.append(create_enemy_spells()) 
-            for s in enemyspells:
-                s.move_forward(9) 
-                if s.collide_pixel(player):
-                    enemyspells.remove(s)
-                    player.hp -= 1
-    elif (round(timer)) == 0 and player.hp < 0 and mode == 2:
+    else:
         background.image = backgrounds[2]
     
 
@@ -308,15 +269,6 @@ def on_key_down(key):
                     player.hp -= 20
                 else:
                     player.hp -= 5
-    elif mode == 2:
-        player_spells.show = False
-        enemy_spells.show = False
-        enemy_images = enemy_idle
-        player_images = player_idle
-        typed = ''
-        typed_status = 'incomplete'
-
-        
 
 
         
@@ -336,14 +288,8 @@ def draw():
         screen.draw.text(str(round(timer)), (0, 0), fontsize = 40, color = 'white')
         enemy.draw()
         player.draw()
-    elif mode == 2:
-        screen.draw.filled_rect(Rect(0, 0, player.hp/100*WIDTH, 30), 'green')
-        screen.draw.text(str(round(timer)), center=(WIDTH/2, 40), fontsize = 40, color = 'white')
-        # if enemy_spells.show == True:
-        #     enemy_spells.draw()
-        for s in enemyspells:
-            if s.show == True:
-                s.draw()
-        player.draw()
+    if win == 1:
+        screen.clear()
+        screen.draw.text("YOU WIN!", center =(WIDTH/2, HEIGHT/2), fontsize = 45, color = 'white')
 
 pgzrun.go()
