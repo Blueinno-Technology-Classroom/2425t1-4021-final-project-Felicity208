@@ -2,7 +2,8 @@ import pgzrun
 from pgzhelper import *
 import random
 import time
-
+from secret import *
+import json
 
 
 
@@ -87,10 +88,6 @@ enemy_death = [
 ]
 
 
-
-
-
-
 player_spell = [
     "projectiles/player/tile000",
     "projectiles/player/tile001"
@@ -102,7 +99,6 @@ enemy_spell =[
 ]
 
 
-
 backgrounds = [
     "background/typingbg",
     "background/shootingbg",
@@ -110,55 +106,82 @@ backgrounds = [
 ]
 
 
-player = Actor(player_idle[0])
-player.images = player_idle
-player.left = -35
-player.bottom = HEIGHT + 90 
-player.scale = 0.8
-player.fps = 6
-player.hp = 100
 
-enemy = Actor(enemy_idle [0])
-enemy.images = enemy_idle
-enemy.right = WIDTH - 20
-enemy.bottom = HEIGHT - 40
-enemy.scale = 1.6
-enemy.fps = 8
+def game_init():
+    global questionBank, specialQuestions, question, typed_status, typed, questions_answered, timer, win, mode, player, enemy, player_spells, enemy_spells, background
+    player = Actor(player_idle[0])
+    player.images = player_idle
+    player.left = -35
+    player.bottom = HEIGHT + 90 
+    player.scale = 0.8
+    player.fps = 6
+    player.hp = 100
+
+    enemy = Actor(enemy_idle [0])
+    enemy.images = enemy_idle
+    enemy.right = WIDTH - 20
+    enemy.bottom = HEIGHT - 40
+    enemy.scale = 1.6
+    enemy.fps = 8
 
 
-player_spells = Actor(player_spell[0])
-player_spells.images = player_spell
-player_spells.x = 230
-player_spells.y = 510
-player_spells.scale = 0.2
-player_spells.show = False
+    player_spells = Actor(player_spell[0])
+    player_spells.images = player_spell
+    player_spells.x = 230
+    player_spells.y = 510
+    player_spells.scale = 0.2
+    player_spells.show = False
 
-enemy_spells = Actor(enemy_spell[0])
-enemy_spells.images = enemy_spell
-enemy_spells.pos = enemy.pos
-enemy_spells.scale = 0.3
-enemy_spells.show = False
+    enemy_spells = Actor(enemy_spell[0])
+    enemy_spells.images = enemy_spell
+    enemy_spells.pos = enemy.pos
+    enemy_spells.scale = 0.3
+    enemy_spells.show = False
 
-background = Actor(backgrounds[0])
-background.x = WIDTH/2
-background.y = HEIGHT/2
-background.scale = 0.6
+    background = Actor(backgrounds[0])
+    background.x = WIDTH/2
+    background.y = HEIGHT/2
+    background.scale = 0.6
 
-questionBank = (['attack', 'spell', 'slash','defeat','slay'])
-specialQuestions = (['conquer', 'vanquish', 'triumph', 'overcome'])
-question = random.choice(questionBank)
-typed = ''
-typed_status = 'incomplete'
-questions_answered = 0
+    questionBank = ['attack', 'spell', 'slash','defeat','slay']
+    specialQuestions = ['conquer', 'vanquish', 'triumph', 'overcome']
+    typed = ''
+    typed_status = 'incomplete'
+    questions_answered = 0
 
-timer = 10
-mode = 1
-win = 0
+    timer = 10
+    mode = 1
+    win = 0
+
+    system_message = 'You are only allowed to respond in a python dictionary format according to the user\' request. The user will provide a grade and category information. You will respond with two word lists, with ten words each. One basic, one advanced in this format: `{"basic": ["word1", "word2"], "advanced": ["word3", "word4"]}`. The words should only include english characters.'
+    grade = int(input("Input your grade:    "))
+    category = str(input("Input the category you're interested in or like to learn about:    "))
+    response = client.chat.completions.create(
+        model=deployment,
+        temperature=0.6,
+        max_tokens=400,
+        messages=[
+            {"role": "system", "content": system_message},
+            {"role": "user", "content": f"The user is in grade {grade}, and would like words related to {category}"}
+        ]
+    )
+
+
+    content = response.choices[0].message.content.replace('\n', '')
+
+    content_dict = json.loads(content)
+
+    questionBank = content_dict['basic']
+    specialQuestions = content_dict['advanced']
+    question = random.choice(questionBank)
+
+game_init()
 
 
 
 def update():
     global typed, question, typed_status, timer, mode, enemyspells
+
     
     if round(timer) > 0 and player.hp > 0:
         if mode == 1: 
@@ -215,12 +238,10 @@ def update():
                 enemy_spells.show  = False
 
     else:
-        if player.hp > 0 and round(timer) == 0:
+        if player.hp >= 0 or round(timer) == 0:
             background.image = backgrounds[2]
             background.scale = 1
-        elif player.hp <= 0:
-            background.image = backgrounds[3]
-            background.scale = 1
+
 
     
 
@@ -236,6 +257,7 @@ def on_key_down(key):
         
         if key == 13:
             typed_status = 'complete'
+
 
         if key == 32:
             typed += ' '
@@ -275,6 +297,9 @@ def on_key_down(key):
                     player.hp -= 20
                 else:
                     player.hp -= 5
+    else:
+        if key == 13:
+            game_init()
 
 
         
@@ -295,5 +320,5 @@ def draw():
         enemy.draw()
         player.draw()
     elif round(timer) == 0 or player.hp <= 0:
-        screen.draw.text("Try again? Press ENTER", center=(WIDTH/2,  600), fontsize = 55, color = 'red')
+        screen.draw.text("Try again? Press ENTER", midbottom=(WIDTH/2,  690), fontsize = 55, color = 'red')
 pgzrun.go()
