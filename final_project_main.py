@@ -106,8 +106,7 @@ enemy_spell =[
 backgrounds = [
     "background/typingbg",
     "background/shootingbg",
-    "background/gameover-time",
-    "background/gameover-hp"
+    "background/gameover"
 ]
 
 

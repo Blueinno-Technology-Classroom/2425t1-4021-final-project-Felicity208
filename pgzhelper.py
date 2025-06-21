@@ -1,6 +1,6 @@
 import math
 import pygame
-from pygame import screen, Rect
+from pygame import Rect
 from pgzero.actor import Actor, POS_TOPLEFT, ANCHOR_CENTER, transform_anchor
 from pgzero import game, loaders
 import sys
