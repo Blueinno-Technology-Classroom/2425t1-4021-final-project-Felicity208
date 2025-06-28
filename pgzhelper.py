@@ -7,6 +7,7 @@ import sys
 import time
 
 
+
 mod = sys.modules["__main__"]
 _fullscreen = False
 
